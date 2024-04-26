@@ -1,7 +1,7 @@
-SUMMARY = "U-boot boot script for Xen on Raspberry Pi 4"
+SUMMARY = "U-boot boot script for Xen on Raspberry Pi"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
-COMPATIBLE_MACHINE = "^raspberrypi4-64$"
+COMPATIBLE_MACHINE = "^(raspberrypi4-64|raspberrypi5)$"
 
 DEPENDS = "u-boot-mkimage-native"
 
@@ -11,12 +11,15 @@ SRC_URI = "file://boot.cmd.xen.in"
 
 RPI_DOM0_MEM ??= "256M"
 RPI_DEBUG_XEN_ARGS ??= "sync_console bootscrub=0"
+RPI_MMC_DEV ??= "0"
+RPI_MMC_DEV:raspberrypi4-64 ??= "1"
 
 do_compile() {
     sed -e 's/@@KERNEL_IMAGETYPE@@/${KERNEL_IMAGETYPE}/' \
         -e 's/@@KERNEL_BOOTCMD@@/${KERNEL_BOOTCMD}/' \
         -e 's/@@RPI_DOM0_MEM@@/${RPI_DOM0_MEM}/' \
         -e 's/@@RPI_DEBUG_XEN_ARGS@@/${RPI_DEBUG_XEN_ARGS}/' \
+        -e 's/@@RPI_MMC_DEV@@/${RPI_MMC_DEV:${MACHINE}}/' \
         "${WORKDIR}/boot.cmd.xen.in" > "${WORKDIR}/boot.cmd"
 
     mkimage -A ${UBOOT_ARCH} -T script -C none -n "Boot script" -d "${WORKDIR}/boot.cmd" boot.scr

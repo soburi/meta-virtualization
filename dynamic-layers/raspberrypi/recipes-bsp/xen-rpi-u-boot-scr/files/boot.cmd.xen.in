@@ -29,18 +29,18 @@ echo Delay to allow the MMC card to be ready
 sleep 1
 
 # Retrieve PARTUUID for the rootfs partition of the sdcard
-part uuid mmc 1:2 rootfs_partuuid
+part uuid mmc @RPI_MMC_DEV@@:2 rootfs_partuuid
 
 echo Add boot arguments for dom0
 setenv dom0_bootargs "console=hvc0 earlycon=xenboot debug root=PARTUUID=${rootfs_partuuid} rootwait"
 fdt set /chosen xen,dom0-bootargs \"${dom0_bootargs}\"
 
 echo Load Xen into memory
-fatload mmc 1:1 ${xen_loadaddr} xen
+fatload mmc @@RPI_MMC_DEV@@:1 ${xen_loadaddr} xen
 echo Xen loaded, size: 0x$filesize
 
 echo Load Linux kernel into memory
-fatload mmc 1:1 ${kernel_loadaddr} Image
+fatload mmc @@RPI_MMC_DEV@@:1 ${kernel_loadaddr} Image
 setenv kernel_size 0x$filesize
 echo Linux loaded, size: 0x$filesize
 

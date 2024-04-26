@@ -8,8 +8,12 @@ PACKAGECONFIG:append:pn-qemu:aarch64 = " fdt"
 # Xen on Raspberry Pi 4 64-bit support
 XEN_RPI4_64_CONFIG_PATH ??= \
     'dynamic-layers/raspberrypi/conf/distro/include/xen-raspberrypi4-64.inc'
+XEN_RPI5_CONFIG_PATH ??= \
+    'dynamic-layers/raspberrypi/conf/distro/include/xen-raspberrypi5.inc'
 include ${@bb.utils.contains('MACHINE', 'raspberrypi4-64', \
     '${XEN_RPI4_64_CONFIG_PATH}', '', d)}
+include ${@bb.utils.contains('MACHINE', 'raspberrypi5', \
+    '${XEN_RPI5_CONFIG_PATH}', '', d)}
 
 # Set serial for working qemuboot console
 SERIAL_CONSOLES:qemuarm64 ?= "115200;ttyAMA0"
