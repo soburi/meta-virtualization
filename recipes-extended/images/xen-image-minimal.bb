@@ -92,7 +92,10 @@ build_syslinux_cfg () {
 WKS_FILE:x86-64 = "directdisk-xen.wks"
 WKS_FILE_DEPENDS_DEFAULT:x86-64 = "syslinux-native"
 WKS_FILE:qemux86-64 = "qemuboot-xen-x86-64.wks"
+WKS_FILE:qemuarm64 = "qemuboot-xen-arm64.wks"
 WKS_FILE_DEPENDS_DEFAULT:qemux86-64 = "syslinux-native"
+WKS_FILE_DEPENDS_DEFAULT:qemuarm64 = "u-boot wic-tools e2fsprogs-native"
+IMAGE_BOOT_FILES:qemuarm64 = "u-boot.bin boot.scr"
 QB_MEM ?= "-m 400"
 QB_DEFAULT_KERNEL ?= "none"
 QB_DEFAULT_FSTYPE ?= "wic"
@@ -102,6 +105,8 @@ QB_SERIAL_OPT = "-serial mon:stdio"
 # qemux86-64 machine does not include 'wic' in IMAGE_FSTYPES, which is needed
 # to boot this image, so add it here:
 IMAGE_FSTYPES:qemux86-64 += "wic"
+IMAGE_FSTYPES:qemuarm64 += "wic"
+IMAGE_INSTALL:append_qemuarm64 = " u-boot"
 do_image_wic[depends] += "xen:do_deploy"
 # Networking: the qemuboot.bbclass default virtio network device works ok
 # and so does the emulated e1000 -- choose according to the network device

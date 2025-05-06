@@ -1,0 +1,7 @@
+part /boot --source bootimg-partition --ondisk sda --fstype=vfat --label boot --active --align 1024
+#part /boot --source u-boot --ondisk mmcblk0 --fstype=vfat --label boot --active --align 1024
+
+part / --source rootfs --ondisk sda --use-uuid --fstype=ext4 --label root --align 1024
+#part / --source rootfs --ondisk mmcblk0       --fstype=ext4  --label root --align 1024
+
+bootloader --configfile="qemuboot-xen-qemuarm64.cfg" --timeout=0
