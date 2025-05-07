@@ -1,2 +1,52 @@
-#
-#
+# 1) FDT のアドレスを引き継ぎ
+fdt addr ${fdt_addr}
+
+# 2) 元の bootargs を保持（必要な場合に FDT の chosen へ戻せます）
+fdt get value bootargs /chosen bootargs
+
+# 3) ロード先アドレスを設定
+setenv xen_loadaddr     0x42000000
+setenv dom0_loadaddr     0x46000000
+
+# 4) FDT を編集できるように余裕を確保
+# 5) Xen 本体への引数を設定
+#   - console=hvc0（hypervisor コンソール）
+#   - dom0_mem はレシピ内で RPI_DOM0_MEM 相当の変数から埋め込む
+fdt resize 0x1000
+echo Add boot arguments for Xen
+fdt set /chosen xen,xen-bootargs "console=hvc0 dom0_mem='@@DOM0_MEM@@'"
+
+# 6) Dom0 モジュールノードを追加
+echo Add a dom0 node to chosen to put Linux boot information in
+fdt mknode /chosen module@0
+
+echo Set this for the Linux boot command
+fdt set /chosen/module@0 compatible "xen,linux-zimage" "multiboot,module"
+
+
+# 7) Xen イメージを virtio 0:1 からロード
+echo Load Xen into memory
+load virtio 0:1 ${xen_loadaddr} xen
+ext4load virtio 0:2 ${xen_loadaddr} /xen
+echo Xen loaded, size: 0x${filesize}
+
+# 8) Dom0 (Linux) イメージを同じパーティションからロード
+echo Load Linux kernel into memory
+load virtio 0:1 ${dom0_loadaddr} Image
+setenv dom0_size 0x${filesize}
+echo Dom0 loaded, size: 0x${filesize}
+
+# 9) Dom0 ノードにアドレス/サイズを書き込む
+echo Set the address and size for the Linux kernel so Xen can pick it up
+fdt set /chosen/module@0 reg <${dom0_loadaddr} ${dom0_size}>
+
+# Define the size and address cells
+fdt set /chosen '#size-cells' <1>
+fdt set /chosen '#address-cells' <1>
+
+# Display the chosen fdt section - can be important for debugging
+fdt print /chosen
+
+# 10) ブート実行
+echo Boot Xen
+booti ${xen_loadaddr} - ${fdt_addr}
